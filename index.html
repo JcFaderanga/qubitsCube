@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Information</title>
+    <style>
+        .info-container {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .info {
+            margin-bottom: 10px;
+        }
+        .day-info {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .separator {
+            border-top: 1px solid #000;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <input id="amount" type="text" placeholder="Enter amount" />
+    <button id="submit">Submit</button>
+    <div class="info-container" id="info-container"></div>
+
+    <script>
+        const transferFee = 0.5; // exchange fee
+        const closeOrderFee = 0.3; // 30%
+        const openOrderFee = 0.002; // 0.2%
+        const profitPercent = 0.015; // 1.5% total profit per trade
+
+        // Functions to handle order fees and profits
+        function openOrder(investment) {
+            const feeAmount = investment * openOrderFee;
+            return investment - feeAmount; // return amount after open order fee
+        }
+
+        function closeOrder(totalProfit) {
+            const feeAmount = totalProfit * closeOrderFee;
+            return feeAmount; // return close order fee
+        }
+
+        function compute(investment, formula) {
+            return formula(investment);
+        }
+
+        document.getElementById('submit').onclick = function() {
+            // Get the latest input value
+            const investedAmount = parseFloat(document.getElementById('amount').value);
+            if (isNaN(investedAmount) || investedAmount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            // Loop through each day
+            const arr = [];
+            let currentAmount = investedAmount;
+
+            for (let i = 1; i <= 30; i++) {
+                // Open a new order and apply fees
+                const amountOnTrade = compute(currentAmount, openOrder);
+                const profitAmount = profitPercent * amountOnTrade;
+                const closeOrderFeeAmount = compute(profitAmount, closeOrder);
+                const totalProfit = profitAmount - closeOrderFeeAmount;
+
+                // Store the results for the day
+                arr.push({
+                    day: i,
+                    initialInvestment: currentAmount,
+                    amountOnTrade: amountOnTrade,
+                    profit: profitAmount,
+                    closeOrderFee: closeOrderFeeAmount,
+                    totalProfit: totalProfit
+                });
+
+                // Update the investment amount for the next day
+                currentAmount = totalProfit + amountOnTrade;
+            }
+
+            // Clear previous results
+            const container = document.getElementById('info-container');
+            container.innerHTML = '';
+
+            // Display the results
+            arr.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day-info');
+                dayDiv.innerHTML = `
+                    <div>Day: ${day.day}</div>
+                    <div style="color:green; font-weight:bold">Initial Investment: ${day.initialInvestment.toFixed(2)}</div>
+                    <div>Amount on Trade: ${day.amountOnTrade.toFixed(2)}</div>
+                    <div>Profit: ${day.profit.toFixed(2)}</div>
+                    <div>Close Order Fee: ${day.closeOrderFee.toFixed(2)}</div>
+                    <div>Total Profit: ${day.totalProfit.toFixed(2)}</div>
+                    <div class="separator"></div>
+                `;
+                container.appendChild(dayDiv);
+            });
+        };
+    </script>
+</body>
+</html>
