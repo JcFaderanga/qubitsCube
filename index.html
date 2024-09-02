@@ -21,12 +21,25 @@
             border-top: 1px solid #000;
             margin: 10px 0;
         }
+        .input{
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
-    <input id="amount" type="text" placeholder="Enter amount" />
-    <button id="submit">Submit</button>
+    <div  class="info-container">
+            <div class="input" >
+                <input id="amount" type="text" placeholder="Enter amount" />
+            </div>
+            <div class="input" >
+                <input id="tradeCount" type="text" placeholder="Enter days" />
+            </div>
+        <button class="input" id="submit">Submit</button>
+    </div>
+    <div class="info-container" id="investmentResult"></div>
+    <br>
     <div class="info-container" id="info-container"></div>
+
 
     <script>
         const transferFee = 0.5; // exchange fee
@@ -49,9 +62,11 @@
             return formula(investment);
         }
 
+        // button
         document.getElementById('submit').onclick = function() {
             // Get the latest input value
             const investedAmount = parseFloat(document.getElementById('amount').value);
+            const tradeCount = parseFloat(document.getElementById('tradeCount').value);
             if (isNaN(investedAmount) || investedAmount <= 0) {
                 alert("Please enter a valid amount.");
                 return;
@@ -60,8 +75,9 @@
             // Loop through each day
             const arr = [];
             let currentAmount = investedAmount;
+    
 
-            for (let i = 1; i <= 60; i++) {
+            for (let i = 1; i <= tradeCount; i++) {
                 // Open a new order and apply fees
                 const amountOnTrade = compute(currentAmount, openOrder);
                 const profitAmount = profitPercent * amountOnTrade;
@@ -91,17 +107,27 @@
                 const dayDiv = document.createElement('div');
                 dayDiv.classList.add('day-info');
                 dayDiv.innerHTML = `
-                    <div>Day: ${day.day}</div>
-                    <div style="color:green; font-weight:bold">Initial Investment: ${day.initialInvestment.toFixed(2)}</div>
-                    <div>Amount on Trade: ${day.amountOnTrade.toFixed(2)}</div>
-                    <div>Profit: ${day.profit.toFixed(2)}</div>
-                    <div>Close Order Fee: ${day.closeOrderFee.toFixed(2)}</div>
-                    <div>Total Profit: ${day.totalProfit.toFixed(2)}</div>
+                    <div style="font-weight:bold">Trade Count: ${day.day}</div>
+                    <div style="font-weight:bold">Initial Investment: ${day.initialInvestment.toFixed(2)}</div>
+                    <div style="color:red;">Open trade fee: ${day.profit.toFixed(2)}</div>       
+                    <div style="color:green; font-weight:bold">Amount on Trade: ${day.amountOnTrade.toFixed(2)}</div>                                                 
+                    <div style="color:red; ">Close Order Fee: ${day.closeOrderFee.toFixed(2)}</div>
                     <div class="separator"></div>
+                    <div style="background: rgb(0,255,0, .2); font-weight:bold">Total Profit: ${day.totalProfit.toFixed(2)}</div>
                 `;
                 container.appendChild(dayDiv);
             });
+            const resultContainer = document.getElementById('investmentResult');
+            result = `
+                <div>Investment: ${investedAmount.toFixed(2)}</div>
+                <div>Amount after ${tradeCount} trades: ${currentAmount.toFixed(2)}</div>
+                <div style="color: green; font-weight: bold">Total Profit: ${(currentAmount - investedAmount).toFixed(2) }</div>
+            `; 
+            resultContainer.classList.add("day-info")
+            resultContainer.innerHTML = result;
+                      
         };
+        
     </script>
 </body>
 </html>
